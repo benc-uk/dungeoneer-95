@@ -55,46 +55,32 @@ label_settings = SubResource("LabelSettings_0r20c")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NewButton" type="Button" parent="." unique_id=1619547323]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -54.0
-offset_top = -107.0
-offset_right = 53.0
-offset_bottom = -72.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=111043206]
+layout_mode = 0
+offset_left = 115.0
+offset_top = 122.0
+offset_right = 206.0
+offset_bottom = 170.0
+theme_override_constants/separation = 15
+
+[node name="NewButton" type="Button" parent="VBoxContainer" unique_id=1619547323]
+layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "New Game"
 
-[node name="LoadButton" type="Button" parent="." unique_id=2078588754]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -54.0
-offset_top = -59.0
-offset_right = 53.0
-offset_bottom = -24.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="LoadButton" type="Button" parent="VBoxContainer" unique_id=2078588754]
+layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Load Game"
 
 [node name="VersionLab" type="Label" parent="." unique_id=470582943]
 layout_mode = 0
 offset_left = 3.0
-offset_top = 225.0
+offset_top = 227.0
 offset_right = 82.0
-offset_bottom = 240.0
+offset_bottom = 242.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.65882355)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 10
 text = "v0.0.1-alpha.002"
 vertical_alignment = 1
 
@@ -116,5 +102,5 @@ offset_right = 320.0
 offset_bottom = 240.0
 mouse_filter = 2
 
-[connection signal="pressed" from="NewButton" to="." method="_on_new_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/NewButton" to="." method="_on_new_button_pressed"]
 [connection signal="toggled" from="MusicCheckButton" to="." method="_on_music_check_button_toggled"]

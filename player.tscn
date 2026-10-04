@@ -17,7 +17,7 @@ far = 10.0
 
 [node name="MainLight" type="OmniLight3D" parent="Container" unique_id=638428465]
 light_energy = 0.5
-omni_attenuation = 3.011
+omni_attenuation = 3.0
 
 [node name="TorchLight" type="OmniLight3D" parent="Container" unique_id=1137132645]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)

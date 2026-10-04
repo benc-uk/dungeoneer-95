@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://tools/models/model_preview.gd" id="1"]
+[ext_resource type="PackedScene" path="res://templates/skeleton_warrior.tscn" id="2"]
+[ext_resource type="Shader" path="res://misc/ps1_output.gdshader" id="3"]
+
+[sub_resource type="ShaderMaterial" id="Output"]
+shader = ExtResource("3")
+shader_parameter/dither_strength = 1.0
+
+[node name="ModelPreview" type="Node3D"]
+script = ExtResource("1")
+model_scene = ExtResource("2")
+
+[node name="Stage" type="Node3D" parent="."]
+
+[node name="Camera" type="Camera3D" parent="."]
+current = true
+fov = 42.0
+near = 0.01
+
+[node name="PostProcess" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Output" type="ColorRect" parent="PostProcess"]
+material = SubResource("Output")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 2

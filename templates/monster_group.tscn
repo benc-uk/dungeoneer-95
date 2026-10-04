@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://lbu2m38h2pht"]
+
+[ext_resource type="PackedScene" uid="uid://cjxpqp46tf5ad" path="res://templates/skeleton_warrior.tscn" id="2_66o0d"]
+
+[node name="MapCell" type="Node3D" unique_id=865743777]
+
+[node name="Node3D" type="Node3D" parent="." unique_id=1487571949]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.3, 0, 0)
+
+[node name="SkeletonWarrior" parent="Node3D" unique_id=1829538632 instance=ExtResource("2_66o0d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.121869534, 0, -0.026309967)
+
+[node name="SkeletonWarrior2" parent="Node3D" unique_id=1765022185 instance=ExtResource("2_66o0d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18184903, 0, 0.018092573)

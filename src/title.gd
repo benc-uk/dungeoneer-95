@@ -3,12 +3,13 @@ extends Node
 func _ready():
 	# Debug, jump to start tomb level
 	#start_new_game("tomb")
-	$NewButton.grab_focus()
+	
+	find_child("NewButton").grab_focus()
 	_on_music_check_button_toggled($MusicCheckButton.button_pressed)
 
 func _on_new_button_pressed():
 	print("Starting game...")
-	start_new_game("tomb")
+	start_new_game("test-cave")
 
 func start_new_game(level_filename: String):
 	var game_scene = load("res://game.tscn")

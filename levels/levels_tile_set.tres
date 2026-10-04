@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" format=3 uid="uid://dnef1pq5756ew"]
 
-[ext_resource type="Texture2D" uid="uid://dm08vdgikuvai" path="res://misc/level_palette.png" id="1_u6jl0"]
+[ext_resource type="Texture2D" uid="uid://dm08vdgikuvai" path="res://levels/level_palette.png" id="1_u6jl0"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_c43op"]
 resource_name = "level_editor"

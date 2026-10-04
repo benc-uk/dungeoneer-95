@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "name": "Wall pillars",
+  "player_start": [0, 0],
+  "player_start_face": "north",
+  "cells": [
+    { "pos": [0, -1], "type": "wall" },
+    { "pos": [-1, 0], "type": "wall" },
+    {
+      "pos": [0, 0],
+      "type": "floor",
+      "wall_features": {
+        "north": "pillar_n",
+        "east": "pillar_e",
+        "south": "pillar_s",
+        "west": "pillar_w"
+      }
+    },
+    { "pos": [1, 0], "type": "wall" },
+    { "pos": [0, 1], "type": "wall" }
+  ],
+  "features": [
+    { "id": "pillar_n", "type": "pillar" },
+    { "id": "pillar_e", "type": "pillar" },
+    { "id": "pillar_s", "type": "pillar" },
+    { "id": "pillar_w", "type": "pillar" }
+  ]
+}

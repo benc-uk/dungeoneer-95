@@ -2,6 +2,7 @@
 
 [ext_resource type="Shader" uid="uid://b64wob6ivurd6" path="res://materials/ps1.gdshader" id="3_p41gu"]
 [ext_resource type="Texture2D" uid="uid://dkjmrp3otqpkt" path="res://textures/tr/tr_flat_0.png" id="4_mq2qf"]
+[ext_resource type="AudioStream" uid="uid://bbrguppc6o63" path="res://audio/sfx/mechanism.wav" id="4_yt3ef"]
 [ext_resource type="Texture2D" uid="uid://d24io66rwasd2" path="res://textures/32/corroded_metal_grid_sharp_1.png" id="5_q16e8"]
 
 [sub_resource type="GDScript" id="GDScript_s774j"]
@@ -55,6 +56,21 @@ tracks/0/path = NodePath(".")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = PackedFloat32Array(0, 1, 0.45414534, -0.12779024, 0, 0.5, 1, 0.47, -0.128, 0, 1, 1, 0.454, -0.128, 0)
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../../Audio")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("4_yt3ef")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_p41gu"]
 _data = {
@@ -81,3 +97,8 @@ mesh = SubResource("BoxMesh_48buh")
 [node name="Anim" type="AnimationPlayer" parent="." unique_id=350822360]
 root_node = NodePath("../Node3D/Button")
 libraries/ = SubResource("AnimationLibrary_p41gu")
+
+[node name="Audio" type="AudioStreamPlayer3D" parent="." unique_id=640517900]
+volume_db = -28.811
+pitch_scale = 0.73
+bus = &"Dungeon"

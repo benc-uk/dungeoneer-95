@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101010">
+  <title>Level editor | Dungeoneer '95</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <svg class="symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-select" viewBox="0 0 24 24"><path d="m5 3 14 10-7 1-3 7Z"/></symbol>
+    <symbol id="icon-floor" viewBox="0 0 24 24"><path d="M4 4h16v16H4Z M4 12h16 M12 4v16"/></symbol>
+    <symbol id="icon-wall" viewBox="0 0 24 24"><path d="M3 5h18v14H3Z M3 12h18 M9 5v7 M16 12v7"/></symbol>
+    <symbol id="icon-erase" viewBox="0 0 24 24"><path d="m13 3 8 8-10 10H7l-5-5Z M7 11l8 8 M11 21h10"/></symbol>
+    <symbol id="icon-spawn" viewBox="0 0 24 24"><path d="m12 3 8 17-8-4-8 4Z"/></symbol>
+  </svg>
+  <header class="topbar">
+    <div class="brand">
+      <svg aria-hidden="true"><use href="#icon-floor"/></svg>
+      <div><h1>Level editor</h1><span>Dungeoneer '95</span></div>
+    </div>
+    <div class="document-name">
+      <label class="sr-only" for="level-name">Level name</label>
+      <input id="level-name" value="Untitled" autocomplete="off" spellcheck="false">
+      <div class="document-meta"><span id="save-status">No changes</span><button id="show-problems" type="button" aria-controls="problems">Draft: 2 problems</button></div>
+    </div>
+    <nav class="file-actions" aria-label="File">
+      <button id="new-file" type="button">New</button>
+      <button id="open-file" type="button" title="Open JSON (Ctrl+O)">Open JSON</button>
+      <button id="save-as" type="button" title="Save As (Ctrl+Shift+S)" hidden>Save As</button>
+      <button id="save-file" class="primary" type="button" title="Save (Ctrl+S)">Save</button>
+      <button id="file-options-toggle" type="button" popovertarget="file-options" title="More file actions" hidden>More</button>
+    </nav>
+    <div id="file-options" popover aria-label="More file actions">
+      <button id="import-file" type="button">Open a copy...</button>
+      <button id="download-file" type="button">Download JSON</button>
+      <p>Open a copy does not link to the original file. Downloads never overwrite the open file.</p>
+    </div>
+    <input id="file-input" type="file" accept=".json,application/json" hidden>
+  </header>
+  <div id="notice" class="notice" role="status" hidden>
+    <span id="notice-text"></span><button id="dismiss-notice" type="button" aria-label="Dismiss message">Close</button>
+  </div>
+  <main class="workspace">
+    <aside class="tools" aria-label="Drawing tools">
+      <h2>Tools</h2>
+      <div class="tool-list" role="group" aria-label="Active tool">
+        <button data-tool="select" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-select"/></svg><span>Select</span><kbd>V</kbd></button>
+        <button data-tool="floor" aria-pressed="true"><svg aria-hidden="true"><use href="#icon-floor"/></svg><span>Floor</span><kbd>F</kbd></button>
+        <button data-tool="wall" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-wall"/></svg><span>Wall</span><kbd>W</kbd></button>
+        <button data-tool="void" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-erase"/></svg><span>Erase</span><kbd>E</kbd></button>
+        <button data-tool="spawn" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-spawn"/></svg><span>Spawn</span><kbd>P</kbd></button>
+      </div>
+      <div class="tool-section">
+        <button id="rectangle" aria-pressed="false" title="Toggle rectangle painting (R)">Rectangle <kbd>R</kbd></button>
+        <p id="shape-hint">Click and drag to paint.</p>
+      </div>
+      <div class="tool-section history-tools">
+        <button id="undo" title="Undo (Ctrl+Z)" disabled>Undo</button>
+        <button id="redo" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
+      </div>
+      <div class="tool-help">
+        <p><strong>Move around</strong><br>Middle-drag or Space-drag to pan. Scroll to zoom.</p>
+        <p><strong>Keyboard</strong><br>Focus the map. Arrow keys select; Enter applies the tool.</p>
+      </div>
+    </aside>
+    <section class="map-area" aria-label="Level map">
+      <div class="map-bar">
+        <span id="tool-description"><strong>Floor</strong> <span>Draw rooms and corridors</span></span>
+        <div class="view-actions">
+          <button id="zoom-out" aria-label="Zoom out">-</button>
+          <output id="zoom" aria-label="Map zoom">100%</output>
+          <button id="zoom-in" aria-label="Zoom in">+</button>
+          <button id="fit-map">Fit map</button>
+          <button id="toggle-inspector" aria-expanded="false" aria-controls="inspector">Inspector</button>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="map" tabindex="0" aria-label="Level grid. Arrow keys select a cell, Enter applies the tool, V selects, F paints floors, W paints walls, E erases and P places spawn." aria-describedby="selection-description">
+          Use the cell inspector to edit the selected coordinates.
+        </canvas>
+        <div id="empty-state" class="empty-state">
+          <div class="empty-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <h2>Make room for an adventure.</h2>
+          <p>Choose <strong>Floor</strong> and drag to draw your first room.<br>Only the cells you paint will be saved.</p>
+        </div>
+        <div id="startup" class="startup" role="alert">
+          <strong>Start the editor with a local HTTP server.</strong>
+          <p>From the project folder, run:</p>
+          <code>py -m http.server 8000 --bind 127.0.0.1 --directory editor</code>
+          <p>Then open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>. If it is already served, check the browser console for a loading error.</p>
+        </div>
+        <div class="compass" aria-hidden="true">N <span>&uarr;</span></div>
+        <div class="legend" aria-label="Map legend"><span><i class="floor-swatch"></i>Floor</span><span><i class="wall-swatch"></i>Wall</span><span><i class="void-swatch"></i>Void</span><span><i class="pillar-swatch"></i>Wall pillar</span><span><i class="monster-swatch">2</i>Monsters (count + facing)</span><span><i class="monster-swatch monster-dead-swatch">x</i>Dead</span></div>
+      </div>
+      <footer class="map-status">
+        <output id="cursor">X 0, Z 0</output>
+        <span id="cell-count">0 cells</span>
+        <span>Sparse grid <span aria-hidden="true">&middot;</span> North is -Z</span>
+      </footer>
+    </section>
+    <aside id="inspector" class="inspector" aria-label="Cell, feature and monster inspector">
+      <header class="inspector-heading"><h2>Inspector</h2><output id="selected-coordinates">0, 0</output><button id="close-inspector" type="button" aria-label="Close inspector">Close</button></header>
+      <p id="selection-description" class="selection-description" aria-live="polite">Cell 0, 0: empty space.</p>
+      <div id="inspector-content"></div>
+      <details id="problems" class="problems">
+        <summary id="problem-summary">Draft: 2 problems</summary>
+        <p>Drafts can be saved. Godot skips broken features, monster groups and links; a valid spawn is required.</p>
+        <ul id="problem-list"></ul>
+      </details>
+    </aside>
+  </main>
+  <dialog id="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-text">
+    <form method="dialog">
+      <h2 id="confirmation-title">Confirm change</h2>
+      <p id="confirmation-text"></p>
+      <div class="dialog-actions"><button value="cancel" autofocus>Cancel</button><button id="confirm-action" class="primary" value="confirm">Continue</button></div>
+    </form>
+  </dialog>
+  <noscript>This editor needs JavaScript enabled.</noscript>
+</body>
+</html>

@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://di20m4iorx36y"]
+
+[ext_resource type="Shader" uid="uid://b64wob6ivurd6" path="res://materials/ps1.gdshader" id="1_k64u2"]
+[ext_resource type="Texture2D" uid="uid://cf7pwevvni563" path="res://textures/plank_parquet_floor.png" id="2_yhcwt"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4o5fl"]
+render_priority = 0
+shader = ExtResource("1_k64u2")
+shader_parameter/albedo_texture = ExtResource("2_yhcwt")
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/affine_strength = 1.0
+shader_parameter/snap_pixels = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_0r20c"]
+top_radius = 0.15
+bottom_radius = 0.15
+height = 1.0
+radial_segments = 8
+rings = 2
+cap_top = false
+cap_bottom = false
+
+[node name="MapWallPillar" type="Node3D" unique_id=2085698280]
+
+[node name="Node3D" type="Node3D" parent="." unique_id=425492258]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=779006909]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55440843, 0, 0)
+material_override = SubResource("ShaderMaterial_4o5fl")
+mesh = SubResource("CylinderMesh_0r20c")

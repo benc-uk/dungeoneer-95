@@ -2,7 +2,23 @@
 
 [ext_resource type="FontFile" uid="uid://coaki4udcmdva" path="res://fonts/quill-and-antler.ttf" id="1_hkmxq"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_disabled"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
+bg_color = Color(0.1, 0.1, 0.1, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hkmxq"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
 bg_color = Color(0, 0, 0, 0.09019608)
 border_width_left = 2
 border_width_top = 2
@@ -14,7 +30,23 @@ corner_radius_bottom_right = 8
 shadow_color = Color(0, 0, 0, 0.49411765)
 shadow_size = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pressed"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a1t8i"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 2.0
 bg_color = Color(0, 0, 0, 0.09019608)
 border_width_left = 2
 border_width_top = 2
@@ -48,9 +80,12 @@ content_margin_right = 2.0
 default_font = ExtResource("1_hkmxq")
 default_font_size = 22
 Button/colors/font_color = Color(0.90434784, 0.7765937, 0.3031532, 1)
+Button/styles/disabled = SubResource("StyleBoxFlat_disabled")
 Button/styles/focus = SubResource("StyleBoxFlat_hkmxq")
 Button/styles/hover = SubResource("StyleBoxFlat_hkmxq")
+Button/styles/hover_pressed = SubResource("StyleBoxFlat_pressed")
 Button/styles/normal = SubResource("StyleBoxFlat_a1t8i")
+Button/styles/pressed = SubResource("StyleBoxFlat_pressed")
 CheckButton/styles/focus = SubResource("StyleBoxFlat_uctte")
 CheckButton/styles/hover = SubResource("StyleBoxEmpty_e0i2v")
 CheckButton/styles/hover_pressed = SubResource("StyleBoxEmpty_hkmxq")

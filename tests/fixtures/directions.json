@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "name": "Directional features",
+  "player_start": [2, 2],
+  "player_start_face": "north",
+  "cells": [
+    { "pos": [0, -1], "type": "wall" },
+    { "pos": [-1, 0], "type": "wall" },
+    {
+      "pos": [0, 0],
+      "type": "floor",
+      "main_feature": "door_ns",
+      "wall_features": { "north": "torch_n", "east": "torch_e", "south": "torch_s", "west": "torch_w" }
+    },
+    { "pos": [1, 0], "type": "wall" },
+    { "pos": [0, 1], "type": "wall" },
+    { "pos": [2, 2], "type": "floor", "main_feature": "door_ew" },
+    { "pos": [4, 0], "type": "floor", "monster_group": "monster_n" },
+    { "pos": [5, 0], "type": "floor", "monster_group": "monster_e" },
+    { "pos": [6, 0], "type": "floor", "monster_group": "monster_s" },
+    { "pos": [7, 0], "type": "floor", "monster_group": "monster_w" }
+  ],
+  "features": [
+    { "id": "door_ns", "type": "door", "state": "closed", "axis": "north_south" },
+    { "id": "door_ew", "type": "door", "state": "open", "axis": "east_west" },
+    { "id": "torch_n", "type": "torch" },
+    { "id": "torch_e", "type": "torch" },
+    { "id": "torch_s", "type": "torch" },
+    { "id": "torch_w", "type": "torch" }
+  ],
+  "monsters": [
+    { "id": "monster_n", "mon_class": "skeleton_warrior", "count": 2, "state": "idle", "facing": "north" },
+    { "id": "monster_e", "mon_class": "skeleton_warrior", "count": 2, "state": "idle", "facing": "east" },
+    { "id": "monster_s", "mon_class": "skeleton_warrior", "count": 2, "state": "idle", "facing": "south" },
+    { "id": "monster_w", "mon_class": "skeleton_warrior", "count": 2, "state": "idle", "facing": "west" }
+  ]
+}

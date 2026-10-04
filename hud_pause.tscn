@@ -1,15 +1,58 @@
 [gd_scene format=3 uid="uid://bslk0txusmhlb"]
 
+[ext_resource type="Theme" uid="uid://df0u3qve4qjua" path="res://misc/main_theme.tres" id="1_78ygf"]
+[ext_resource type="FontFile" uid="uid://c581dp7ywpe4r" path="res://fonts/seagram.ttf" id="2_dbtrd"]
+[ext_resource type="Script" uid="uid://3hppug5phanf" path="res://src/hud_pause.gd" id="2_kut10"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_dbtrd"]
+blend_mode = 1
+
 [node name="HudPause" type="Control" unique_id=1199916584]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_78ygf")
+script = ExtResource("2_kut10")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1198518945]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.56)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1807866861]
+material = SubResource("CanvasItemMaterial_dbtrd")
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 103.0
+offset_right = 222.0
+offset_bottom = 240.0
+theme_override_constants/separation = 25
 alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1460577939]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_dbtrd")
+theme_override_font_sizes/font_size = 16
+text = "PAUSED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResumeBtn" type="Button" parent="VBoxContainer" unique_id=441298755]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Resume"
+
+[node name="ExitBtn" type="Button" parent="VBoxContainer" unique_id=791885703]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Exit Game"
+
+[connection signal="pressed" from="VBoxContainer/ResumeBtn" to="." method="_on_resume_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/ExitBtn" to="." method="_on_exit_btn_pressed"]

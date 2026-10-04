@@ -2,16 +2,15 @@ extends Node3D
 
 var world_state: WorldState
 var level_filename = "" # Populated when starting a new game or loading a level
-var paused = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Load and parse the level file
-	world_state = WorldState.new(level_filename)
+	world_state = WorldStateLoader.load_level(level_filename)
 	
 	if not world_state.loaded_ok:
 		push_error("Cannot start game: level '%s' failed to load." % level_filename)
-		OS.alert("Cannot start game: level '%s' failed to load." % level_filename, "Level load failed")
+		OS.alert(world_state.load_error, "Level load failed")
 		var title_scene := preload("res://title.tscn")
 		var title := title_scene.instantiate()
 		get_tree().root.add_child.call_deferred(title)
@@ -22,7 +21,9 @@ func _ready():
 	var wall_scene = load("res://templates/map_cell.tscn")
 	var door_scene = load("res://templates/map_door.tscn")
 	var wall_button_scn = load("res://templates/map_button.tscn")
-	var torch_scn = load("res://templates/map_torch.tscn")	
+	var torch_scn = load("res://templates/map_torch.tscn")
+	var pillar_scn = load("res://templates/map_wall_pillar.tscn")
+	var monster_group_scn = load("res://templates/monster_group.tscn")
 	
 	for pos in world_state.cells:
 		var cell = world_state.cells[pos]
@@ -45,11 +46,17 @@ func _ready():
 				inst.bind(feat)
 				
 			# Create torches
-			if feat != null && feat is WorldState.TorchFetaure:#
-				print("adajhdsdjshdj")
+			if feat != null && feat is WorldState.TorchFeature:
 				inst = torch_scn.instantiate()
 				inst.position = Grid.cell_to_world(pos)
+				inst.rotate_y(Grid.dir_to_angle(feat_dir) - Grid.dir_to_angle(Grid.Dir.WEST))
 				$Map.add_child(inst)
+				
+			if feat != null && feat is WorldState.PillarFeature:
+				inst = pillar_scn.instantiate()
+				inst.position = Grid.cell_to_world(pos)
+				inst.rotate_y(Grid.dir_to_angle(feat_dir) - Grid.dir_to_angle(Grid.Dir.WEST))
+				$Map.add_child(inst)				
 
 		feat = world_state.get_feature(cell.main_feature)
 		
@@ -57,11 +64,20 @@ func _ready():
 		if feat != null && feat is WorldState.DoorFeature:
 			inst = door_scene.instantiate()
 			inst.position = Grid.cell_to_world(pos)
-			# Check if cell north of door is floor to orient it NS or EW
-			if world_state.cells[Vector2i(pos.x, pos.y-1)].type == WorldState.CellType.WALL:
+			if feat.axis == WorldState.DoorFeature.Axis.EAST_WEST:
 				inst.rotate_y(deg_to_rad(90))
 			$Map.add_child(inst)
 			inst.bind(feat)
+			
+		# Create monsters
+		var mg = world_state.get_monster_group(cell.monster_group)
+		if mg != null:
+			inst = monster_group_scn.instantiate()
+			inst.position = Grid.cell_to_world(pos)
+			print(mg.facing)
+			# Skeleton models face south (+Z) before the group rotation.
+			inst.rotate_y(Grid.dir_to_angle(mg.facing))
+			$Map.add_child(inst)
 			
 
 	# Instantiate player
@@ -71,15 +87,3 @@ func _ready():
 	player.teleport(world_state.player_start, world_state.player_start_face)
 	add_child(player)
 	print("Player added at: ", world_state.player_start)
-
-func _physics_process(delta: float):
-	if Input.is_action_just_pressed("pause"):
-		if !paused:
-			$HudPause.show()
-			paused = true
-			return
-		if paused:
-			$HudPause.hide()
-			paused = false
-			return
-		print(paused)

@@ -18,26 +18,45 @@ filtering and a PS1-style output shader.
 - Treat conceptual questions as discussion, not permission to modify files.
   Respect explicit requests to make no change.
 
+## Editor context
+
+For browser editor work, read [editor\AGENTS.md](editor/AGENTS.md) first.
+It links to the editor's design system, implementation handover and shared
+JSON contract. Read that handover for editor-to-Godot changes even when
+editing only `src\world_state.gd` or `src\game.gd`.
+
+The browser editor has its own modern visual system; the game's retro
+rendering guidance below is not a request to restyle the editor.
+Keep the handover documents current when changing the behaviour they describe.
+
 ## Current project structure
 
 This is a snapshot, not a substitute for reading the files before changing
 them. The prototype is evolving quickly; confirm current scene paths,
 properties, node names and behaviour in code.
 
-| Path | Responsibility |
-| --- | --- |
-| `project.godot` | Godot 4.7 project settings, title main scene, `Global` autoload, input actions, 320x240 viewport, GL Compatibility and Jolt Physics |
-| `title.tscn`, `src\title.gd` | Title menu; New Game starts the `"tomb"` level, and the music toggle controls title music |
-| `game.tscn`, `src\game.gd` | Runtime game root, generated `Map`, music, post-process shader and pause HUD |
-| `levels\*.tscn`, `levels\levels_tile_set.tres` | Authored level blueprints using `Layout` and `Markers` `TileMapLayer` nodes and shared tile custom data |
-| `src\world_state.gd` | `WorldState` data model; parses a level blueprint into cells, features and player start data, and answers walkability queries |
-| `src\grid.gd` | Cardinal directions, step vectors and cell-to-world conversion |
-| `templates\map_cell.tscn`, `src\map_cell.gd` | Generated cell visuals; `show_walls` controls the wall mesh |
-| `templates\map_door.tscn`, `src\map_door.gd` | Door visual bound to a `WorldState.DoorFeature` |
-| `templates\map_button.tscn`, `templates\map_torch.tscn` | Wall-feature visuals |
-| `player.tscn`, `src\player.gd` | Player node, camera and lights; grid movement, turning, interaction and footstep audio |
-| `misc\ps1_output.gdshader` | PS1-style output shader used by the game scene |
-| `src\global.gd` | `Global` autoload; creates and installs a resized custom mouse cursor |
+| Path                                                            | Responsibility                                                                                                                      |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `project.godot`                                                 | Godot 4.7 project settings, title main scene, `Global` autoload, input actions, 320x240 viewport, GL Compatibility and Jolt Physics |
+| `title.tscn`, `src\title.gd`                                    | Title menu; New Game starts the `"tomb"` level, and the music toggle controls title music                                           |
+| `game.tscn`, `src\game.gd`                                      | Runtime game root, generated `Map`, music, post-process shader and pause HUD                                                        |
+| `editor\`                                                       | Standalone HTML/CSS/JavaScript canvas editor, served over local HTTP without a build step                                           |
+| `levels\*.json`                                                 | Sparse authored levels; legacy TileMap scenes and TileSet remain as references only                                                 |
+| `src\world_state.gd`                                            | `WorldState` data model, nested cell/feature types and runtime interaction/walkability                                              |
+| `src\world_state_loader.gd`                                     | Reads JSON, constructs a world and connects known feature IDs; no full runtime schema validator                                     |
+| `docs\level-format.md`, `tests\fixtures\world_state_cases.json` | Versioned JSON contract, editor validation cases and reusable level fixtures                                                        |
+| `src\grid.gd`                                                   | Cardinal directions, step vectors and cell-to-world conversion                                                                      |
+| `templates\map_cell.tscn`, `src\map_cell.gd`                    | Generated cell visuals; `show_walls` controls the wall mesh                                                                         |
+| `templates\map_door.tscn`                                       | Door visual with its embedded script bound to a `WorldState.DoorFeature`                                                            |
+| `templates\map_button.tscn`, `templates\map_torch.tscn`         | Wall-feature visuals                                                                                                                |
+| `src\light_flicker.gd`                                          | `OmniLight3D` noise-based torch flicker; used by `templates\map_torch.tscn` and `player.tscn`                                        |
+| `templates\item.tscn`                                           | Item visual template                                                                                                                |
+| `models\skeleton_warrior\`, `templates\skeleton_warrior.tscn` | Generated animated skeleton GLB and retro wrapper; not connected to gameplay |
+| `tools\models\`, `docs\model-pipeline.md` | Reusable native Godot model generation, per-model recipes and F6 preview; read the workflow before changing generated assets |
+| `hud_pause.tscn`, `src\hud_pause.gd`                            | Pause HUD; owns the pause input, toggles `get_tree().paused` and offers resume/exit                                                 |
+| `player.tscn`, `src\player.gd`                                  | Player node, camera and lights; grid movement, turning, interaction and footstep audio                                              |
+| `misc\ps1_output.gdshader`                                      | PS1-style output shader used by the game scene                                                                                      |
+| `src\global.gd`                                                 | `Global` autoload; creates and installs a resized custom mouse cursor                                                               |
 
 ## Current behaviour and architecture
 
@@ -45,19 +64,42 @@ properties, node names and behaviour in code.
   menu; `_ready()` focuses New Game rather than starting a debug game.
 - `src\title.gd` starts `"tomb"` when New Game is selected. It assigns
   `level_filename` to a new Game instance before adding it to the scene tree.
-- `Game` constructs one `WorldState`, creates map and feature visuals from its
-  cells, then injects that same state into Player and calls `teleport()` before
-  adding Player to the tree.
-- A level blueprint is a `Node2D` with `Layout` and `Markers` `TileMapLayer`
-  children. The shared TileSet defines `tile_type`, `is_player_start` and
-  `player_start_face` custom data. `WorldState` parses those layers; do not
-  assume the authored map is a hand-placed collection of 3D cells.
+- `Game` calls `WorldStateLoader.load_level(level_filename)`, creates map and
+  feature visuals from the resulting cells, then injects that same state into
+  Player and calls `teleport()` before adding Player to the tree.
+- Levels are versioned JSON with sparse cell and feature arrays, spawn and
+  facing. `WorldStateLoader` reads `res://levels/<name>.json`, reconstructs
+  the typed dictionaries and resolves known feature IDs to objects.
+  Missing cells are blocked void, not implicit walls. Do not restore a
+  TileMap loading path or expand the map's bounding rectangle.
 - `WorldState` is a plain reference-counted data object, not a scene node or
-  autoload. It owns the parsed map cells and feature objects. Player currently
-  owns its logical position and facing as well as its movement animation.
-- `WorldState` includes door features and supports button-to-feature action
-  links. It also contains hard-coded button and torch placements used for
-  testing; treat them as test code, not a general level-authoring mechanism.
+  autoload. `WorldState.new()` creates an empty object without file I/O.
+  It owns map cells and features; Player owns its logical position, facing
+  and movement animation. Keep the dependency one-way: the loader uses the
+  model, never the model calling back into the loader.
+- `WorldState` supports doors, buttons, torches, wall pillars and monster groups. Their placements and
+  button action links are authored in JSON, not hard-coded. Wall features
+  belong to floor-cell edges, and doors have an explicit passage axis.
+  The existing `TorchFeature` class name is retained.
+- Pillars load as `PillarFeature` from `type: "pillar"` and occupy a floor
+  cell's cardinal wall slot. They are non-blocking decorations without
+  action links. Editor authoring and JSON loading are connected; game
+  rendering of the wall pillar template is not connected yet.
+- Monster groups use a separate `monsters` registry and `Cell.monster_group`
+  ID reference, with one group per floor cell in the editor. Current groups
+  contain 1 to 4 `skeleton_warrior` monsters with idle/dead state and cardinal
+  facing. Game instances the two-skeleton group template at each referenced
+  cell and applies facing relative to the model's +Z (south) front. Count,
+  state and combat are not yet connected to the visuals, and monsters do
+  not change walkability.
+- The editor owns full schema and authoring checks. The runtime trusts that
+  format: missing feature IDs, unsupported definitions and broken action links
+  are warned about and skipped, not reasons to reject an otherwise usable
+  level. A missing door leaves its floor walkable. Do not reintroduce a
+  duplicated runtime validator or wall-support/placement audits.
+- File/JSON failures, an unusable document structure or no usable player spawn
+  leave `loaded_ok` false with `load_error`. `WorldStateLoader.from_document()`
+  constructs a fresh world from parsed data for tests or other callers.
 - Player is a `Node3D`, not a `CharacterBody3D`. It moves by tweening its
   transform and checks `WorldState.is_walkable()` before stepping. Do not
   assume player movement uses collision shapes or physics.
@@ -68,22 +110,22 @@ properties, node names and behaviour in code.
 - The right controller stick adjusts the camera container's head-look angles.
 - The game scene applies `misc\ps1_output.gdshader`; the title scene contains
   the shader surface but its post-process layer is hidden.
-- The pause input currently toggles the pause HUD and a local flag. Inspect
-  `src\game.gd` before assuming the SceneTree or Player is actually paused.
+- The pause input is handled in `src\hud_pause.gd`, not `game.gd`. It shows the
+  pause HUD and sets `get_tree().paused`, so the SceneTree is genuinely paused.
 - `Global` handles cursor setup only. Keep unrelated game state out of it.
 
 Input actions currently declared in `project.godot` include:
 
-| Action | Keyboard |
-| --- | --- |
-| `move_forward` | W / Up |
-| `move_backward` | S / Down |
-| `turn_left` | A / Left |
-| `turn_right` | D / Right |
-| `strafe_left` | Q |
-| `strafe_right` | E |
-| `interact` | Space |
-| `pause` | Escape |
+| Action          | Keyboard  |
+| --------------- | --------- |
+| `move_forward`  | W / Up    |
+| `move_backward` | S / Down  |
+| `turn_left`     | A / Left  |
+| `turn_right`    | D / Right |
+| `strafe_left`   | Q         |
+| `strafe_right`  | E         |
+| `interact`      | Space     |
+| `pause`         | Escape    |
 
 The actions also have controller bindings. Reuse the current action names;
 in particular, the movement action is `move_backward`, not
@@ -113,8 +155,9 @@ in particular, the movement action is `move_backward`, not
   affect every instance.
 - If adding collision, keep it consistent with walkability. Hiding a wall mesh
   does not disable a collision shape.
-- Surface load, parse and invalid-data errors explicitly. Avoid silent
-  fallbacks that leave an apparently successful but incomplete level.
+- Surface essential load/parse/spawn failures explicitly. Optional feature
+  and reference problems should produce warnings and be skipped without
+  aborting level loading.
 
 ## Grid movement
 
@@ -138,6 +181,14 @@ in particular, the movement action is `move_backward`, not
 
 ## Visual direction and scope
 
+- Procedural character source lives in `tools\models\recipes\`, not in the
+  generated GLB. Use the shared runner to regenerate and retain `.import`
+  settings for clip loops and full pose tracks. The skeleton wrapper applies
+  0.3 scale outside the rig; the portable model is Y-up and faces +Z.
+- For model changes, read `docs\model-pipeline.md`, run
+  `tests\test_model_assets.gd` and inspect the standalone
+  `tools\models\model_preview.tscn` with F6. Do not connect preview assets to
+  gameplay unless requested.
 - Preserve nearest-neighbour filtering, integer viewport scaling, the
   Compatibility renderer and the existing retro visual direction.
 - The current project already has a low-resolution viewport and a PS1-style
@@ -166,20 +217,28 @@ in particular, the movement action is `move_backward`, not
 
 ## Validation
 
-There is currently no checked-in automated test suite or external build
-system. Do not invent an npm, .NET or other unrelated build step.
+There is no application build step. The editor has dependency-free Node
+tests, and Godot has a native headless loader/gameplay runner reusing valid
+JSON fixtures and checking forgiving reference handling. The editor's invalid
+case expectations are not a runtime validation policy. Do not introduce npm
+bundling, .NET or another unrelated build system.
+
+```powershell
+node --test editor\tests\level.test.mjs editor\tests\file-access.test.mjs
+```
 
 With a Godot 4.7 executable available, run these from the project root after
 relevant code, scene or resource changes:
 
 ```powershell
 godot --headless --path . --editor --import
+godot --headless --path . --script tests\test_world_state.gd --quit-after 600
 godot --headless --path . --quit-after 30
 ```
 
 Use the installed executable's actual name or path if it is not on `PATH`.
 Inspect output for script, resource and scene errors, not just the exit code.
-The second command is a startup smoke check, not a complete gameplay test.
+The final command is a startup smoke check, not a complete gameplay test.
 Distinguish pre-existing errors from errors introduced by the change.
 
 Use **F5** to run the project and **F6** to run the scene being edited. For
